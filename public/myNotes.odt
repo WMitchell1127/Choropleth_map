@@ -1,0 +1,169 @@
+const select = d3.select;
+const json = d3.json;
+const geoPath = d3.geoPath;
+const geoMercator = d3.geoMercator;
+const pathtGenerator = geoPath();
+const feature = topojson.feature;
+
+
+//*****************************************************
+//***************** Width and Height ******************
+//****************************************************/
+
+var margin = { top: 10, right: 30, bottom: 30, left: 60},
+    width = 1000,
+    height = 600 + margin.top + margin.bottom;
+
+ //////////// makes the map //////////////////////
+
+ const svg = d3.select('#map')
+ .append('svg')
+ .attr('height', 880)
+ .attr('width', 1075)
+ .attr('viewBox', `0 0 1000 780`)
+//  .attr('height', height + margin.top + margin.bottom)
+//  .attr('width', width + margin.right + margin.left)
+//  .attr('viewBox', `0 0 ${width + margin.right + margin.left} ${height + margin.top + margin.bottom}`)       
+ .append('g')
+ .attr('id', 'description')
+ .attr('transform', `translate(${margin.left}, ${margin.top})`)    
+
+/*********************************************************
+ ********** grabs the education data from json ***********
+ *********************************************************/
+    
+const County = json('assets/data/counties.json')
+const Education = json('assets/data/for-user-education.json')
+Promise.all([County, Education])
+    .then((data) => {
+
+        let countyData = data[0]
+        let educational = data[1]
+        let countyPopulation = data[2]
+
+
+    ////////////// map colors /////////////////////////
+
+    const colors = d3.scaleLinear()
+        .domain([3, 48])
+        .range(['brown', 'burlywood'])        
+
+    /*Color Scale*/
+    // const colorScale = d3.scaleSequential()
+    // .domain([12, 100])
+    // .interpolator(d3.interpolateTurbo);
+
+    const counties = feature(countyData, countyData.objects.counties);
+
+  
+      //////////////////////Counties//////////////////////////////
+      ///////////////////////////////////////////////////////////
+
+      svg.selectAll('path').data(counties.features).enter()
+      .append('path')
+      .attr('class', 'county')
+      .attr('d', pathtGenerator)
+      .attr('fill', (d) => {
+          let currentCounty = educational.filter(n => n.fips === d.id)
+          return colorScale(currentCounty[0].bachelorsOrHigher)
+      })
+      .attr('data-fips', (d) => {
+          let currentCounty = educational.filter(n => n.fips === d.id)
+          return currentCounty[0].fips
+      })
+      .attr('data-education', (d) => {
+          let currentCounty = educational.filter(n => n.fips === d.id)
+          return currentCounty[0].bachelorsOrHigher
+      })
+      .attr('stroke', 'black')
+      .on('mouseover', function (d) {
+          let currentCounty = educational.filter(n => n.fips === d.id)
+
+          tooltip.transition()
+              .attr('data-education', currentCounty[0].bachelorsOrHigher)
+              .style('opacity', 1)
+
+          tooltip.html(`${currentCounty[0].area_name} 
+          <br/> Bachelors Degree or Higher: ${currentCounty.length === 0 ? 'N/A' : currentCounty[0].bachelorsOrHigher}${'%'}`)
+              .style('left', (`${d3.event.pageX - 100}px`))
+              .style('top', (`${d3.event.pageY + 10}px`))
+      })
+      .on('mouseleave', function (d) {
+          tooltip.transition()
+              .style('opacity', 0)
+      })
+
+        /*********************************************************
+         ***************** tooltips on counties ******************
+        ************** the toolip color and border ***************
+        ***********************************************************/
+
+// const tooltip = d3.select('body').append('div')
+//     .style('position', 'absolute')
+//     .style('background-color', 'black')
+//     .style('padding', '5px 15px')
+//     .style('border', '1px #blue solid')
+//     .style('border-radius', '5px')
+//     .style('opacity', '0')
+
+//         .on('mouseover', function (d) {
+//             let currentCounty = educationData.filter(n => n.fips == d.id)
+//             tooltip.transition()
+//                 .style('opacity', 1)
+//                 .attr('data-education', currentCounty[0].bachelorsOrHigher)
+
+//             tooltip.html(`${currentCounty[0].area_name}, ${currentCounty[0].state} 
+//                <br/> ${currentCounty[0].bachelorsOrHigher}`)
+//                 .style('left', (d3.event.pageX + 10) + 'px')
+//                 .style('top', (d3.event.pageY + 'px'))
+//                 .attr('id', 'tooltip')
+
+
+//         })
+//         .on('mouseleave', function (d) {
+//             tooltip.transition()
+//                 .style('opacity', 0)
+
+//         })
+
+
+    /////////////////// color legend /////////////////////
+
+    let arr = [3, 12, 21, 30, 39, 48, 57, 66, 75]
+
+
+    let legend = svg.selectAll('g.legend')
+        .data(arr)
+        .enter().append('g')
+        .attr('class', 'legend')
+        .attr('id', 'legend')
+        
+
+
+    var l_w = 10, l_h = 30
+
+    legend.append('rect')
+        .attr('x', (d, i) => 500)
+        .attr('y', (d, i) => 120 + (i * l_h) - l_h)
+        .attr('width', l_w)
+        .attr('height', 20)
+        .style('fill', d => colors(d))
+        .attr('data-num', d => d)
+        .attr('stroke', 'white')
+        .attr('transform', 'translate(425,60)')
+
+    legend.append('text')
+        .attr('x', 925)
+        .attr('y', (d, i) => 150 + (i * l_h) - l_h)
+        .text((d, i) => d + '%')
+        .attr('transform', 'translate(16,47)')
+
+    svg.append('text')
+        .text('Counties in U.S.A and population percentage of persons with a B.A. or Higher')
+        .attr('x', 200)
+        .attr('y', 20)
+        .attr('id', 'title')
+
+
+
+});

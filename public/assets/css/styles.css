@@ -1,0 +1,54 @@
+
+@font-face{
+    font-family: myFont;
+    src: url(/public/Fonts/AguafinaScript-Regular.ttf);
+}
+
+
+body {
+    margin: 0px;
+    background-image: radial-gradient(farthest-side at 50% 35%,rgb(44, 82, 232), 20%, rgb(7, 28, 180), 80%, rgb(4, 10, 99));
+    /* background-color: rgb(3, 3, 202);  */
+    animation: mymove 18s infinite; 
+           
+}
+
+@keyframes mymove{
+    from {background-image: radial-gradient(farthest-side at 50% 45%,rgb(44, 82, 232), 20%, rgb(7, 28, 180), 80%, rgb(4, 10, 99));}    
+    to {background-image: radial-gradient(farthest-side at 50% 45%,rgb(102, 108, 111), 20%, rgb(17, 18, 28), 80%, rgb(7, 7, 9));}
+}
+
+#title {
+    text-align: center;
+    margin-bottom: 0;
+    font-size: 100px;
+    font-family: myFont;
+    -webkit-text-fill-color: burlywood;
+    text-shadow: 0 10px 5px rgba(0,0,0,.99), 0 6px 5px rgba(0,0,0,0.85);
+    -webkit-text-stroke: .1px rgba(230, 21, 21, .2);    
+}
+
+
+svg{
+    margin-top: 0px;
+    padding-bottom: 60px;
+    width: 100vw;
+    height: 80vh; 
+}
+
+.county:hover{
+    fill: red;
+}
+
+path:hover{
+    stroke: white;
+    stroke-width: 2px;       
+}
+
+
+
+
+
+
+
+ 
